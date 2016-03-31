@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "local-events",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Send events over multiple pages, through localStorage",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
