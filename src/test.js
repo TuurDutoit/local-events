@@ -3,7 +3,10 @@ import EventEmitter from "./index";
 const $form = document.querySelector("form");
 const $input = document.querySelector(".input");
 const $output = document.querySelector(".log");
-const events = new EventEmitter("a");
+const events = new EventEmitter();
+
+window.EventEmitter = EventEmitter;
+window.events = events;
 
 const onMessage = function(e) {
   let $line = document.createElement("p");

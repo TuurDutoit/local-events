@@ -4,8 +4,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-const now = () => Date.now && Date.now() || new Date().getTime();
-
 const randIdMultiplier = Math.pow(10, 20);
 const randId = () => Math.floor(Math.random() * randIdMultiplier);
 
@@ -18,7 +16,7 @@ const timestamp = () => {
   if (getChromeVersion() >= 49) {
     return performance.now();
   } else {
-    return now();
+    return Date.now && Date.now() || new Date().getTime();
   }
 };
 
@@ -56,13 +54,14 @@ const mimickEvent = e => {
 };
 
 class EventEmitter {
-  constructor(room, opts) {
-    if (!opts) {
-      opts = {};
+  constructor(room, opts = {}) {
+    if (typeof room === "object") {
+      opts = room;
+      room = null;
     }
 
     this.listeners = {};
-    this.room = room || now().toString();
+    this.room = room || EventEmitter.NO_ROOM;
     this.options = {
       attach: opts.attach !== false,
       emulate: opts.emulate !== false
@@ -73,16 +72,28 @@ class EventEmitter {
     }
   }
 
+  static get NO_ROOM() {
+    return "__no room ID assigned__";
+  }
+
+  get NO_ROOM() {
+    return EventEmitter.NO_ROOM;
+  }
+
+  static get version() {
+    return "0.0.2";
+  }
+
   get version() {
-    return "0.0.1";
+    return EventEmitter.version;
   }
 
-  attach() {
-    window.addEventListener("storage", this);
+  attach(origin = window) {
+    origin.addEventListener("storage", this);
   }
 
-  detach() {
-    window.removeEventListener("storage", this);
+  detach(origin = window) {
+    origin.removeEventListener("storage", this);
   }
 
   handleEvent(e) {
@@ -147,7 +158,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const $form = document.querySelector("form");
 const $input = document.querySelector(".input");
 const $output = document.querySelector(".log");
-const events = new _index2.default("a");
+const events = new _index2.default();
+
+window.EventEmitter = _index2.default;
+window.events = events;
 
 const onMessage = function (e) {
   let $line = document.createElement("p");

@@ -1,5 +1,3 @@
-const now = () => (Date.now && Date.now()) || new Date().getTime();
-
 const randIdMultiplier = Math.pow(10, 20);
 const randId = () => Math.floor(Math.random() * randIdMultiplier);
 
@@ -13,7 +11,7 @@ const timestamp = () => {
     return performance.now();
   }
   else {
-    return now();
+    return (Date.now && Date.now()) || new Date().getTime();
   }
 }
 
@@ -51,14 +49,17 @@ const mimickEvent = e => {
 }
 
 
+
+
 export default class EventEmitter {
-  constructor(room, opts) {
-    if(!opts) {
-      opts = {};
+  constructor(room, opts = {}) {
+    if(typeof room === "object") {
+      opts = room;
+      room = null;
     }
 
     this.listeners = {};
-    this.room = room || now().toString();
+    this.room = room || EventEmitter.NO_ROOM;
     this.options = {
       attach: opts.attach !== false,
       emulate: opts.emulate !== false
@@ -69,16 +70,28 @@ export default class EventEmitter {
     }
   }
 
+  static get NO_ROOM() {
+    return "__no room ID assigned__";
+  }
+
+  get NO_ROOM() {
+    return EventEmitter.NO_ROOM;
+  }
+
+  static get version() {
+    return "0.0.2";
+  }
+
   get version() {
-    return "0.0.1";
+    return EventEmitter.version;
   }
 
-  attach() {
-    window.addEventListener("storage", this);
+  attach(origin = window) {
+    origin.addEventListener("storage", this);
   }
 
-  detach() {
-    window.removeEventListener("storage", this);
+  detach(origin = window) {
+    origin.removeEventListener("storage", this);
   }
 
   handleEvent(e) {
