@@ -56,11 +56,23 @@ const onUnload = e => {
   events.emit("leave", username);
 }
 
+const onJoin = e => {
+  let $line = document.createElement("p");
+  $line.innerHTML = `<em>${e.emulated ? "You" : e.data} joined the chat.</em>`;
+  $output.appendChild($line);
+}
+
+const onLoad = e => {
+  events.emit("join", username);
+}
+
 
 // Attach event listeners
 $messageForm.addEventListener("submit", onSendMessage);
 $usernameForm.addEventListener("submit", onSetUsername);
 window.addEventListener("beforeunload", onUnload);
+window.addEventListener("load", onLoad);
 events.on("message", onMessage);
 events.on("username", onUsername);
 events.on("leave", onLeave);
+events.on("join", onJoin);
