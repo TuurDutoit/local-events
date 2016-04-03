@@ -1,5 +1,5 @@
 const randIdMultiplier = Math.pow(10, 20);
-const randId = () => Math.floor(Math.random() * randIdMultiplier);
+const randId = () => Math.floor(Math.random() * randIdMultiplier).toString();
 
 const getChromeVersion = () => {
     var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
@@ -96,11 +96,12 @@ export default class EventEmitter {
 
   handleEvent(e) {
     let val = e.newValue;
-    let ci = val.indexOf(",");
-    let room = val.slice(0, ci);
+    let c1 = val.indexOf(",");
+    let room = val.slice(0, c1);
 
     if(e.key === "__events__" && room === this.room) {
-      let dataStr = val.slice(ci+22);
+      let c2 = val.indexOf(",", c1+1);
+      let dataStr = val.slice(c2+1);
       let data = JSON.parse(dataStr);
       merge(e, data);
       e.version = this.version;

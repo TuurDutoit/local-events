@@ -1,11 +1,83 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 
+var _index = require("./index");
+
+var _index2 = _interopRequireDefault(_index);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Some vars we'll need
+const $messageForm = document.querySelector(".message-form"); // Import the module we're demoing
+
+const $message = document.querySelector(".message");
+const $usernameForm = document.querySelector(".username-form");
+const $username = document.querySelector(".username");
+const $output = document.querySelector(".log");
+const events = new _index2.default();
+let username = "anonymous" + Math.floor(Math.random() * 1000);
+
+// Expose the base class and the instance we're working with
+// Just to be able to poke around in the dev tools
+window.EventEmitter = _index2.default;
+window.events = events;
+
+// Event listeners
+const onMessage = e => {
+  let $line = document.createElement("p");
+  $line.textContent = `${ e.emulated ? "You" : e.data.username }: ${ e.data.msg }`;
+  $output.appendChild($line);
+};
+
+const onSendMessage = e => {
+  e.preventDefault();
+  let data = { msg: $message.value, username };
+  events.emit("message", data);
+  $message.value = "";
+};
+
+const onUsername = e => {
+  let $line = document.createElement("p");
+  $line.innerHTML = `<em>${ e.emulated ? "You" : e.data.old } changed ${ e.emulated ? "your" : "his / her" } username to ${ e.data.username }.</em>`;
+  $output.appendChild($line);
+};
+
+const onSetUsername = e => {
+  e.preventDefault();
+  let old = username;
+  username = $username.value;
+  let data = { username, old };
+  events.emit("username", data);
+  $username.value = "";
+};
+
+const onLeave = e => {
+  if (!e.emulated) {
+    let $line = document.createElement("p");
+    $line.innerHTML = `<em>${ e.data } left the chat.</em>`;
+    $output.appendChild($line);
+  }
+};
+
+const onUnload = e => {
+  events.emit("leave", username);
+};
+
+// Attach event listeners
+$messageForm.addEventListener("submit", onSendMessage);
+$usernameForm.addEventListener("submit", onSetUsername);
+window.addEventListener("beforeunload", onUnload);
+events.on("message", onMessage);
+events.on("username", onUsername);
+events.on("leave", onLeave);
+},{"./index":2}],2:[function(require,module,exports){
+"use strict";
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 const randIdMultiplier = Math.pow(10, 20);
-const randId = () => Math.floor(Math.random() * randIdMultiplier);
+const randId = () => Math.floor(Math.random() * randIdMultiplier).toString();
 
 const getChromeVersion = () => {
   var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
@@ -98,11 +170,12 @@ class EventEmitter {
 
   handleEvent(e) {
     let val = e.newValue;
-    let ci = val.indexOf(",");
-    let room = val.slice(0, ci);
+    let c1 = val.indexOf(",");
+    let room = val.slice(0, c1);
 
     if (e.key === "__events__" && room === this.room) {
-      let dataStr = val.slice(ci + 22);
+      let c2 = val.indexOf(",", c1 + 1);
+      let dataStr = val.slice(c2 + 1);
       let data = JSON.parse(dataStr);
       merge(e, data);
       e.version = this.version;
@@ -146,36 +219,4 @@ class EventEmitter {
   }
 }
 exports.default = EventEmitter;
-},{}],2:[function(require,module,exports){
-"use strict";
-
-var _index = require("./index");
-
-var _index2 = _interopRequireDefault(_index);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const $form = document.querySelector("form");
-const $input = document.querySelector(".input");
-const $output = document.querySelector(".log");
-const events = new _index2.default();
-
-window.EventEmitter = _index2.default;
-window.events = events;
-
-const onMessage = function (e) {
-  let $line = document.createElement("p");
-  $line.textContent = `${ e.event }: ${ e.data.msg }`;
-  $output.appendChild($line);
-};
-
-const onSubmit = function (e) {
-  e.preventDefault();
-  let data = { msg: $input.value };
-  events.emit("message", data);
-  $input.value = "";
-};
-
-$form.addEventListener("submit", onSubmit);
-events.on("message", onMessage);
-},{"./index":1}]},{},[2]);
+},{}]},{},[1]);
